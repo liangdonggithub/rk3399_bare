@@ -10,6 +10,8 @@
 #define    UART3_BASE                0xFF1B0000
 #define    UART4_BASE                0xFF370000
 
+#define     UART_REG_REGION             0x10000
+
 #define    UART2_THR                 (*(volatile unsigned int *)(UART2_BASE + 0x0000))  //Transmit Holding Register
 #define    UART2_DLL                 (*(volatile unsigned int *)(UART2_BASE + 0x0000))  //Divisor Latch (Low)
 #define    UART2_DLH                 (*(volatile unsigned int *)(UART2_BASE + 0x0004))  //Divisor Latch (High)

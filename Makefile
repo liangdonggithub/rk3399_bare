@@ -18,25 +18,24 @@ ALL_C_OBJ=$(patsubst %.c,%.o,$(ALL_C))
 
 ALL_OBJ= $(ALL_S_OBJ) $(ALL_C_OBJ)
 
-ASMOPS= -g -Iinclude -nostdlib -fno-builtin
-COPS= -g -Iinclude -nostdlib -fno-builtin
-
-PLATFORM_LIBS += -L $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -lgcc
+ASMOPS= -Iinclude -fPIC
+COPS= -g -O0 -Iinclude -nostdlib -fno-builtin -fPIC
+LDOPS= -pie
 
 all : $(BIN)
 
 $(BIN): $(LDS) $(ALL_OBJ)
-	$(CROSS)-ld -T $(LDS) -Map $(MAP) -o $(ELF) $(ALL_OBJ) $(PLATFORM_LIBS)
+	$(CROSS)-ld $(LDOPS) -T $(LDS) -Map $(MAP) -o $(ELF) $(ALL_OBJ)
 	$(CROSS)-objcopy $(ELF) -O binary $(BIN)
 
 %.o: %.S 
-	$(CROSS)-gcc $(ASMOPS) -MMD -c $<  -o $@
+	$(CROSS)-gcc $(ASMOPS) -c $<  -o $@
 
 %.o: %.c 
-	$(CROSS)-gcc $(COPS) -MMD -c $< -o $@
+	$(CROSS)-gcc $(COPS) -c $< -o $@
 
 clean:
-	rm ./src/*.o ./src_loader/*.o ./src/*.d ./src_loader/*.d *.map *.elf *.bin
+	rm -f ./src/*.o ./src_loader/*.o ./src/*.d ./src_loader/*.d *.map *.elf *.bin
 
 loader: $(BIN_LDR) $(LDS_LDR)
 	$(MERGER_LDR) $(MERGER_LDR_INI)

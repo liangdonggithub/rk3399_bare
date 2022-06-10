@@ -25,3 +25,5 @@ In this case. 'halt' to stop core. 'load_image rk3399_bare.bin 0x0' to write cod
 Run './dbg.sh' to call gdb-multiarch<br>
 Note that openocd script file gdb port maybe not equal with this case(.gdbinit target remote configuration). You need change it for your own environment.
 ## enjoy it!
+# notice
+binutil ld v2.34 with a 'PHDR segment not covered by LOAD segment' bug when you try to ld with parameter '-pie'.Change ld to v2.26.1.<br>

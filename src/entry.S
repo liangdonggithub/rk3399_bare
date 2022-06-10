@@ -61,7 +61,7 @@
 .endm
 
 /* Exception vectors.*/
-.section ".text"
+.section ".vector"
 .align  11 
 .global vectors
 vectors:

@@ -137,23 +137,10 @@ int printf(const char *fmt, ...)
     return 0;
 }
 
-
-int printf_test(void)
-{
-    printf("=========This is printf test=========\n");
-    printf("test char            = %c,%c\n", 'H', 'c');
-    printf("test decimal1 number = %d\n",     123456);
-    printf("test decimal2 number = %d\n",     -123456);
-    printf("test hex1    number  = 0x%x\n",   0x123456);
-    printf("test hex2    number  = 0x%08x\n", 0x123456);
-    printf("test string          = %s\n",    "www.hceng.cn");
-
-    return 0;
-}
-
+/*
 void puts(char *ptr)
 {
     while(*ptr)
         early_uart_sendbyte(*ptr++);
 }
-
+*/

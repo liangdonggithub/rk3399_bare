@@ -7,7 +7,7 @@
 .global _gic_init
 _gic_init:
     /*******************************************************/
-	mov	x29, lr		             //Save LR 
+	mov	x29, x30		             //Save LR 
 
 	ldr	x0, =RKIO_GICD_PHYS          //RKIO_GICD_PHYS   GIC DIST 
 	bl	gic_init_secure
@@ -15,7 +15,7 @@ _gic_init:
 	ldr	x0, =RKIO_GICR_PHYS          //RKIO_GICR_PHYS
 	bl	gic_init_secure_percpu
 
-	mov	lr, x29			         //Restore LR
+	mov	x30, x29			         //Restore LR
 	ret	
 	
 /*******************************************************/	

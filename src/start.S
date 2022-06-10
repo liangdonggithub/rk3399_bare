@@ -13,6 +13,8 @@ _start:
 	ldr w1,=0x10001000
 	str w1,[x0]
 #endif
+	//init relocate dyn
+	bl init_relc_dyn
 	//set gic controller
 	bl _gic_init
 	//secure init
@@ -67,14 +69,14 @@ el2_to_el1:
 	eret
 
 el1_entry:
-	ldr x0,=SYS_INFO_MEM_SIZE	//set stack pointer
+	adr x0,__init_stack_e	//set stack pointer
 	bic sp,x0,#0xf
 
-	ldr x0,=vectors				//set vectors
+	adr x0,vectors				//set vectors
 	msr vbar_el1,x0
 
-	ldr x0,=__bss_start
-	ldr x1,=__bss_end
+	adr x0,__init_bss_s
+	adr x1,__init_bss_e
 	cmp x0,x1
 	b.eq 1f
 0:
