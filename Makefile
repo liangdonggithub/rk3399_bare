@@ -11,14 +11,22 @@ LDS_LDR=loader.lds
 MERGER_LDR=./tools/boot_merger
 MERGER_LDR_INI=./tools/RK3399MINIALL.ini
 
-ALL_S=$(wildcard src/*.S)
+SRC_PATH=src
+SRC_DIRS=$(shell find $(SRC_PATH) -maxdepth 3 -type d)
+
+ALL_S=$(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.S))
 ALL_S_OBJ=$(patsubst %.S,%.o,$(ALL_S))
-ALL_C=$(wildcard src/*.c)
+ALL_C=$(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
 ALL_C_OBJ=$(patsubst %.c,%.o,$(ALL_C))
+
+#ALL_S=$(wildcard src/*.S)
+#ALL_S_OBJ=$(patsubst %.S,%.o,$(ALL_S))
+#ALL_C=$(wildcard src/*.c)
+#ALL_C_OBJ=$(patsubst %.c,%.o,$(ALL_C))
 
 ALL_OBJ= $(ALL_S_OBJ) $(ALL_C_OBJ)
 
-ASMOPS= -Iinclude -fPIC
+ASMOPS= -g -O0 -Iinclude -Iinclude -fPIC
 COPS= -g -O0 -Iinclude -nostdlib -fno-builtin -fPIC
 LDOPS= -pie
 
@@ -35,7 +43,7 @@ $(BIN): $(LDS) $(ALL_OBJ)
 	$(CROSS)-gcc $(COPS) -c $< -o $@
 
 clean:
-	rm -f ./src/*.o ./src_loader/*.o ./src/*.d ./src_loader/*.d *.map *.elf *.bin
+	rm -f $(ALL_OBJ) ./src_loader/*.o ./src/*.d ./src_loader/*.d *.map *.elf *.bin
 
 loader: $(BIN_LDR) $(LDS_LDR)
 	$(MERGER_LDR) $(MERGER_LDR_INI)

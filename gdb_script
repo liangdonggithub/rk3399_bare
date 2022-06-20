@@ -1,0 +1,3 @@
+symbol-file rk3399_bare.elf -o 0xffff000000000000
+
+

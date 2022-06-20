@@ -1,4 +1,4 @@
-#include "early_uart.h"
+#include "dev/early_uart.h"
 
 static void early_uart_iomux(void)
 {

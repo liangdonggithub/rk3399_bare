@@ -13,8 +13,6 @@ _start:
 	ldr w1,=0x10001000
 	str w1,[x0]
 #endif
-	//init relocate dyn
-	bl init_relc_dyn
 	//set gic controller
 	bl _gic_init
 	//secure init

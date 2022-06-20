@@ -1,7 +1,7 @@
 #ifndef VMSA_H
 #define VMSA_H
 
-#include "reg_common.h"
+#include "tools/reg_common.h"
 #include "sysinfo.h"
 
 //l3 page table item attrs

@@ -1,12 +1,10 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "vmsa.h"
-#include "early_uart.h"
+#include "mm/vmsa.h"
+#include "dev/early_uart.h"
 #include "printf.h"
-
-#define MEM_ROUND_DOWN(addr,mask)   (addr & (~mask))
-#define MEM_ROUND_UP(addr,mask)     ((addr&mask)?((addr&(~mask))+mask+1):((!addr)?(mask+1):(addr)))
+#include "tools/helper.h"
 
 //#define L3_PFN_ATTR_RWX		        (PTI_AF_SET(1)|PTI_SH_SET(3)|PTI_PXN_SET(1)|PTI_UXN_SET(1)|PTI_DBM_SET(1)|PTI_NS_SET(1)|PTI_AttrIndx_SET(PTI_ATTRIDX_NOR))
 #define L3_PFN_ATTR_RWX		        	(PTI_AF_SET(1)|PTI_SH_SET(3)|PTI_DBM_SET(1)|PTI_NS_SET(1)|PTI_AttrIndx_SET(PTI_ATTRIDX_NOR))

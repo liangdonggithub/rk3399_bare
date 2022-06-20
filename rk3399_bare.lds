@@ -39,6 +39,13 @@ SECTIONS
 	}
 	__init_reladyn_e = .;
 	. = ALIGN(8);
+	__init_got_s = .;
+	.got :
+	{
+		*(.got)
+	}
+	__init_got_e = .;
+	. = ALIGN(8);
 	__init_stack_s = .;
 	.init_stack :
 	{

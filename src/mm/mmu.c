@@ -1,10 +1,14 @@
-#include "memory.h"
+#include "mm/mmu.h"
 
 extern unsigned long kernel_s;
 extern unsigned long kernel_e;
 extern unsigned long init_pagetable_s;
 extern unsigned long init_pagetable_e;
-unsigned long           pagetable_cursor;
+extern unsigned long init_stack_s;
+extern unsigned long init_stack_e;
+extern unsigned long init_heap_s;
+extern unsigned long init_heap_e;
+unsigned long        pagetable_cursor;
 
 void print_init_area()
 {
@@ -73,6 +77,7 @@ static int early_modify_page_map(unsigned char level, unsigned long area_base, u
         return -1;
     unsigned long* p_pti = (unsigned long*)page_table_addr;
     unsigned long pti_area_s, pti_area_e, tmp, current_table_end;
+    unsigned char have_in = 0;
     *pt_end += PAGE_SIZE;
     current_table_end = *pt_end;
     p_pti += (*va_start & (0x1ff << (12 + (3-level)*9))) >> (12 + (3-level)*9);
@@ -80,14 +85,15 @@ static int early_modify_page_map(unsigned char level, unsigned long area_base, u
         pti_area_s = area_base + ((((unsigned long)p_pti - page_table_addr)/sizeof(unsigned long)) << (12 + (3 - level)*9));
         pti_area_e = pti_area_s + (1UL << (12 + (3 - level)*9));
         if (pti_area_s <= *va_start && *va_start < pti_area_e && *size > 0) {
+            have_in = 1;
             if (level != 3) {
-                if ((*p_pti & 0x1) == 0) {
+                if ((*p_pti & 0x1) == 0) {                      //next level doesn't exist
                     tmp = *pt_end;
                     early_build_page_map(level+1, pti_area_s, tmp, phy_start, va_start, size, pte_attr, pt_end);
                     *p_pti = L02_NEXT_LEVEL_IS_PTI(tmp >> 12);
-                } else if ((*p_pti & 0x3) == 3) {
+                } else if ((*p_pti & 0x3) == 3) {               //next level have already exist
                     *pt_end -= PAGE_SIZE;
-                    tmp = *p_pti & 0xfffffffff000;
+                    tmp = *p_pti & 0xfffffffff000;              //get next level page table addr
                     early_modify_page_map(level+1, pti_area_s, tmp, phy_start, va_start, size, pte_attr, pt_end);
                 }
             } else {
@@ -97,7 +103,8 @@ static int early_modify_page_map(unsigned char level, unsigned long area_base, u
                 *va_start += PAGE_SIZE;
             }
         } else {
-            return 0;
+            if (have_in)
+                return 0;
         }
         p_pti++;
     }
@@ -125,7 +132,31 @@ static void add_device_identical_map(unsigned long* p_pgd)
     size = UART_REG_REGION;
     new_end = pagetable_cursor;
     early_modify_page_map(0, 0, *p_pgd, &phy_start, &va_start, &size, L3_PFN_ATTR_DEV, &new_end);
-    early_dbg_print(PRT_INFO, "identical device map page table from 0x%x to 0x%x!\r\n", kernel_e, new_end);
+    early_dbg_print(PRT_INFO, "identical device map page table from 0x%x to 0x%x!\r\n", pagetable_cursor, new_end);
+    pagetable_cursor = new_end;
+}
+
+static void add_init_stack_map(unsigned long* p_pgd)
+{
+    unsigned long phy_start, va_start, size, new_end;
+    phy_start = init_stack_s;
+    va_start = (KERN_STACK_REGION_S & 0x0000ffffffffffffUL) - KERN_INIT_STACK_PAGES*PAGE_SIZE;
+    size = KERN_INIT_STACK_PAGES*PAGE_SIZE;
+    new_end = pagetable_cursor;
+    early_modify_page_map(0, 0, *p_pgd, &phy_start, &va_start, &size, L3_PFN_ATTR_RWX, &new_end);
+    early_dbg_print(PRT_INFO, "init stack map page table from 0x%x to 0x%x!\r\n", pagetable_cursor, new_end);
+    pagetable_cursor = new_end;
+}
+
+static void add_init_heap_map(unsigned long* p_pgd)
+{
+    unsigned long phy_start, va_start, size, new_end;
+    phy_start = init_heap_s;
+    va_start = KERN_HEAP_REGION_S & 0x0000ffffffffffff;
+    size = KERN_INIT_HEAP_PAGES*PAGE_SIZE;
+    new_end = pagetable_cursor;
+    early_modify_page_map(0, 0, *p_pgd, &phy_start, &va_start, &size, L3_PFN_ATTR_RWX, &new_end);
+    early_dbg_print(PRT_INFO, "init heap map page table from 0x%x to 0x%x!\r\n", pagetable_cursor, new_end);
     pagetable_cursor = new_end;
 }
 
@@ -169,7 +200,7 @@ static int mmu_enable(unsigned long pgd_addr)
 
 static void reserve_page_table_mem(void)
 {
-    init_pagetable_s =  MEM_ROUND_UP(kernel_e, PAGE_MASK);
+    init_pagetable_s =  MEM_ROUND_UP(init_heap_e, PAGE_MASK);
     pagetable_cursor = init_pagetable_s;
     unsigned long ddr_pages = (SYS_INFO_MEM_END - SYS_INFO_MEM_START) >> PAGE_SHIFT;
     unsigned long ddr_l3_pages = !(ddr_pages >> 9) ? 1 : (ddr_pages >> 9);
@@ -184,12 +215,28 @@ static void reserve_page_table_mem(void)
     early_dbg_print(PRT_INFO, "reserve memory for kernel page tables, from 0x%x to 0x%x\r\n", init_pagetable_s, init_pagetable_e);
 }
 
+static void reserve_stack_mem(void)
+{
+    init_stack_s = MEM_ROUND_UP(kernel_e, PAGE_MASK);
+    init_stack_e = init_stack_s + PAGE_SIZE*KERN_INIT_STACK_PAGES;
+}
+
+static void reserve_heap_mem(void)
+{
+    init_heap_s = MEM_ROUND_UP(init_stack_e, PAGE_MASK);
+    init_heap_e = init_heap_s + PAGE_SIZE*KERN_INIT_HEAP_PAGES;
+}
+
 void mmu_init()
 {
     unsigned long pgd_identical_addr;
+    reserve_stack_mem();
+    reserve_heap_mem();
     reserve_page_table_mem();
     build_identical_map(&pgd_identical_addr);
     add_device_identical_map(&pgd_identical_addr);
+    add_init_stack_map(&pgd_identical_addr);
+    add_init_heap_map(&pgd_identical_addr);
     mmu_reg_init();
     if(0 != mmu_enable(pgd_identical_addr)) {
         early_dbg_print(PRT_ERROR, "mmu init failed!\r\n");

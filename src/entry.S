@@ -82,6 +82,8 @@ vectors:
     .align  7    
     b   _do_error           //Current EL Error Handler
 
+.section ".text"
+.align 2
 _do_bad_sync:
     exception_entry
     bl  halt                //do_bad_sync
