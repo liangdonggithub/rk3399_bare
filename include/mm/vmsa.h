@@ -1,3 +1,11 @@
+/*
+ * @Author: Neal 624872416@qq.com
+ * @Date: 2022-06-07 15:30:17
+ * @LastEditors: Neal 624872416@qq.com
+ * @LastEditTime: 2022-07-06 10:14:07
+ * @FilePath: /rk3399_bare/include/mm/vmsa.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef VMSA_H
 #define VMSA_H
 
@@ -34,7 +42,7 @@
 
 //l0-l2 page table item attrs
 #define PTI_NEXTL_TYPE_SET(val)						AREA_SET(val,0,2)
-#define PTI_NEXTL_ADDR_SET(val)						AREA_SE_SET(val,12,47)
+#define PTI_NEXTL_ADDR_SET(val)						AREA_SE_SET((val),12,47)
 #define PTI_NEXTL_IS_PTI							3
 #define PTI_NEXTL_IS_BLK							1
 #define PTI_NEXTL_IS_INV							0

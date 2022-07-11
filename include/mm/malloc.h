@@ -1,3 +1,11 @@
+/*
+ * @Author: Neal 624872416@qq.com
+ * @Date: 2022-06-13 16:57:13
+ * @LastEditors: Neal 624872416@qq.com
+ * @LastEditTime: 2022-07-06 14:47:15
+ * @FilePath: /rk3399_bare/include/mm/malloc.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef MALLOC_H
 #define MALLOC_H
 
@@ -5,6 +13,7 @@
 #include "tools/rbtree.h"
 #include "tools/list.h"
 #include "sysinfo.h"
+#include "mm/page_allocator.h"
 
 struct malloc_block_header {
 
@@ -62,7 +71,7 @@ struct malloc_block_base {
     struct list_head        pos_head;
 };
 
-struct malloc_block_base* init_malloc_sys(u64 va_start, u64 len);
+struct malloc_block_base* init_malloc_sys(void);
 
 void* malloc(u64 size);
 

@@ -118,15 +118,14 @@ static s8 addr_rbtree_node_search_cmp(Node* node, void* param)
     return addrn > addrp ? 1 : (addrn == addrp ? 0 : -1);
 }
 
-struct malloc_block_base* init_malloc_sys(u64 va_start, u64 len)
+struct malloc_block_base* init_malloc_sys()
 {
     struct malloc_block_header* first_header;
     struct malloc_block_base* block_base;
     int tmp;
     u32 first_gap;
-    if ((va_start & PAGE_MASK) || (len & PAGE_MASK))
-        return NULL;
-    if (len < sizeof(struct malloc_block_base) + mbh_get_extra_len_by_num(sizeof(struct malloc_block_base)))
+    u64 va_start = (u64)alloc_pages_discrete(KERN_INIT_HEAP_PAGES, KERN_HEAP_REGION_S, SUBS_HEAP);
+    if (!va_start)
         return NULL;
 
     first_header = (struct malloc_block_header*)va_start;
@@ -139,7 +138,7 @@ struct malloc_block_base* init_malloc_sys(u64 va_start, u64 len)
     mbh_set_itemlen(first_header, MEM_ROUND_UP(sizeof(struct malloc_block_base), 0x7));
     first_header->maps[0] = 0;
     mbh_set_idx_map(first_header, 0, 1);
-    first_header->mgt_max_va = va_start + len;
+    first_header->mgt_max_va = va_start + KERN_INIT_HEAP_PAGES * PAGE_SIZE;
     first_header->non_mgt_va_page = (MAX_VA - first_header->mgt_max_va) >> PAGE_SHIFT;
 
     block_base_zero(block_base);

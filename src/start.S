@@ -82,6 +82,7 @@ el1_entry:
 	cmp x0,x1
 	b.ne 0b
 1:
+	//bl early_freq_set
 	b main
 
 	
